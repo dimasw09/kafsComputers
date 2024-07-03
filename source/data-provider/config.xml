@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<configuration
+storeName="Kafs Computers"
+logoImage="logo.png"
+currency = "IDR"
+currencySymbol = "Rp"
+businessEmail = "kafscomputers@gmail.com"
+fromEmail = "kafscomputers@gmail.com"
+siteBaseUrl = "http://website.com/"
+usePaypal = "1"
+useSubmitOrder = "1"
+shippingCharges = "0"
+taxPercentage = "0"
+/>

@@ -1,0 +1,542 @@
+﻿<!--
+  jQuery XML Store / Shop - Shopping Cart
+  Created by livelyworks - http://livelyworks.net
+  Ver. 3.5.0 - 22 JUN 2023
+  Based on Bootstrap 4
+ -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Kafs Computers </title>
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1, shrink-to-fit=no, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <link rel="stylesheet" href="static-assets/packages/bootstrap-4/css/bootstrap.min.css">
+    <link href="static-assets/lw-jquery-xml-cart/css/lw-jquery-xml-cart.min.css?ver-3.0.0" rel="stylesheet">
+    <link href="static-assets/packages/fa-5.0.6/css/fontawesome-all.min.css" rel="stylesheet">
+
+    <link rel="shortcut icon" href="static-assets/ico/favicon.ico">
+    <link rel="apple-touch-icon" href="static-assets/ico/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="static-assets/ico/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="static-assets/ico/apple-touch-icon-114x114.png">
+</head>
+<!-- do not remove bs-4, used for theme recognition -->
+
+<body class="bs-4">
+    <div id="loaderContainer">
+        <div class="preloader">Loading...</div>
+        <span class="lw-waiting-text">Please wait</span>
+        <div class="lw-loading-status">Initializing...</div>
+    </div>
+    <div id="mainContainer" style="display:none;">
+        <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark lw-header-container d-flex flex-row">
+            <!--  logo -->
+            <a class="navbar-brand" href=""><img id="storeLogo" src="logo.png" alt="Logo" /></a>
+            <!-- Show Cart Button -->
+            <span class="shopping-cart-btn-container align-self-end"></span>
+            <!-- /Show Cart Button -->
+        </nav>
+        <!-- Breadcrumb -->
+        <nav class="lw-breadcrumb-container" aria-label="breadcrumb">
+            <ol class="breadcrumb" id="productsBreadcrumb">
+                <li class="breadcrumb-item">All</li>
+            </ol>
+        </nav>
+        <!-- /Breadcrumb -->
+        <!-- Main Container -->
+        <div class="container-fluid content-container">
+            <!-- Content Holder -->
+            <div class="row">
+                <div class="col-lg-3 col-md-3 col-sm-4">
+                    <!-- Sidebar Holder -->
+                    <!-- search section -->
+                    <div class="card">
+                        <div class="card-header">
+                            Product Search
+                        </div>
+                        <div class="card-body">
+                            <div class="input-group">
+                                <input type="search" class="search-product form-control">
+                                <div class="input-group-append">
+                                    <button disabled class="btn btn-outline-secondary clear-search-result-btn"
+                                        type="button"><strong>&times;</strong></button>
+                                </div>
+                            </div><!-- /input-group -->
+                            <small id="searchedProductCounts"></small>
+                        </div>
+                    </div>
+                    <!-- /search section -->
+                    <!-- Categories Holder -->
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            Kategori
+                        </div>
+                        <div class="list-group list-group-flush" id="categoriesList">
+                            <a data-categoryindex="all" href="#/category/uid-all"
+                                class="category-link-all category-link list-group-item list-group-item-action active-category category-list-item-all">All</a>
+                        </div>
+                    </div>
+                    <!-- /Categories Holder -->
+                    <!-- /Sidebar Holder -->
+                </div>
+                <div class="col-lg-9 col-md-9 col-sm-8">
+                    <!-- Products Holder -->
+                    <div id="productsContainer" class="thumbnails">
+                    </div>
+                    <!-- /Products Holder -->
+                </div>
+            </div>
+            <!-- /Content Holder -->
+            <!-- Footer -->
+            <footer id="footer" class="row">
+                <div class="footer-text p-2 col-lg-12">&copy; <span class="footer-store-name">Company</span> 2023 <small
+                        class="store-credits"> | Powered By jQueryXMLShoppingCart 3.5.0 | Design &amp; Developed by <a target="_blank" href="http://livelyworks.net">livelyworks</a></small><a href="#" class="go-to-top fr float-right"> <i class="fa fa-arrow-up"></i> Go to Top</a>
+                </div>
+            </footer>
+            <!-- /Footer -->
+        </div>
+        <!-- /Main Container -->
+    </div>
+    <!-- Modal Placeholder -->
+    <div id="modalContainer">
+        <div class="modal fade lw-modal" id="commonModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content common-modal-content">
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div>
+    </div>
+    <!-- Modal Placeholder -->
+    <!--  Templates -->
+    <!-- Submit Order form -->
+    <script type="text/template" class="submit-order-form-template">
+    <div class="modal-header">
+      <h3 class="order-page-header modal-title">Submit Order</h3>
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    </div>
+    <div class="modal-body order-page-body">
+      <!-- Submit Order Form -->
+      <form class="form-horizontal bs-4-form" id="submitOrderForm">
+      <div class="bs-callout bs-callout-danger">
+    Field(s) marked as <strong class="color-red">*</strong> are required.
+  </div>
+
+  <div class="alert alert-danger hidden lw-errors-container">
+      <strong>Error!!</strong>
+      <p class="lw-other-error-message hidden">
+      </p>
+      <p class="lw-error-sof_email hidden">
+          Please enter a valid email address.
+      </p>
+  </div>
+<div>
+    <!--  Name -->
+      <div class="form-group row">
+          <label for="fname" class="col-sm-3 col-md-3 col-lg-3 control-label">Name: </label>
+          <div class="col-sm-3 col-md-3 col-lg-3">
+            <input type="text" name="fname" value="" id="fname" class="form-control" placeholder="First Name" autofocus="">
+
+          </div>
+          <div class="col-sm-3 col-md-3 col-lg-3">
+            <input type="text" name="lname" value="" id="lname" class="form-control" placeholder="Last Name">
+
+          </div>
+                  </div>
+    <!--  /Name -->
+    <!--  Email -->
+    <div class="form-group row">
+            <label for="sof_email" class="col-sm-3 col-md-3 col-lg-3 control-label"><strong class="color-red">*</strong> Email: </label>
+            <div class="col-sm-6 col-md-6 col-lg-6">
+             <input type="email" name="sof_email" value="" id="sof_email" class="form-control required" required>
+     </div>
+          </div>
+          <!--  /Email --> 
+          <!--  Address -->
+          <div class="form-group row">
+<label for="sof_add" class="col-sm-3 col-md-3 col-lg-3 control-label">Address: </label>
+            <div class="col-sm-6 col-md-6 col-lg-6">
+             <div class="input-group">
+              <div class="input-group-prepend">
+                    <span class="input-group-text">Street</span>
+                  </div>
+              <input type="text" name="sof_add" value="" id="sof_add" class="form-control" autocomplete="off">
+            </div>
+            </div>
+          </div>
+            <!--  /Street --> 
+            <!--  City -->
+      <div class="form-group row">
+              <label for="" class="col-sm-3 col-md-3 col-lg-3 control-label"></label>
+              <div class="col-sm-6 col-md-6 col-lg-6">
+               <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">City</span>
+                  </div>
+                <input type="text" name="sof_city" value="" id="sof_city" class="form-control">
+ 
+              </div>
+              </div>
+            </div>
+
+            <!--  /City --> 
+            <!--  Zip code -->
+            <div class="form-group row">
+<label for="" class="col-sm-3 col-md-3 col-lg-3 control-label"></label>
+              <div class="col-sm-6 col-md-6 col-lg-6">
+               <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">ZIP</span>
+                  </div>
+                <input type="text" name="sof_zip" value="" id="sof_zip" class="form-control">
+              </div>
+              </div>
+            </div>
+
+            <!--  /Zip code --> 
+            <!--  Phone -->
+
+            <div class="form-group row">
+<label for="" class="col-sm-3 col-md-3 col-lg-3 control-label"></label>
+              <div class="col-sm-6 col-md-6 col-lg-6">
+               <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Phone</span>
+                  </div>
+                <input type="tel" name="sof_ph" value="" id="sof_ph" class="form-control">
+              </div>
+              </div>
+            </div>
+            <!--  /Phone --> 
+            <!--  Country -->
+            <div class="form-group row">
+<label for="" class="col-sm-3 col-md-3 col-lg-3 control-label"></label>
+              <div class="col-sm-6 col-md-6 col-lg-6">
+               <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Country</span>
+                  </div>
+                <input type="text" name="sof_country" value="" id="sof_country" class="form-control">
+              </div>
+              </div>
+            </div>
+
+            <!--  /Country --> 
+
+          
+          <!--  /Address --> 
+          <!--  Message -->
+          <div class="form-group row">
+ <label for="sof_message" class="col-sm-3 col-md-3 col-lg-3 control-label">Message if any: </label>
+              <div class="col-sm-8 col-md-8 col-lg-8">
+                <textarea name="sof_message" cols="40" rows="10" id="sof_message" class="form-control"></textarea>
+            </div>
+            </div>
+          <!--  /Message -->
+      </form>
+      <!-- /Submit Order Form --> 
+    </div>
+    <div class="modal-footer"> 
+      <!--  Action Buttons -->
+      <div><a id="backToCartBtn" href="#" class="btn btn-light float-left mr-2"><i class="fa fa-arrow-left"></i> Back to Cart</a> <a href="#" id="submitOrderBtn"  class="btn btn-primary btn-md mr-2 disabled"><i class="fa fa-envelope"></i> Submit Order</a> <button class="btn btn order-page-close-btn btn btn-light" data-dismiss="modal" aria-hidden="true">Cancel</button></div>
+      <!--  /Action Buttons --> 
+    </div>
+</script>
+    <!-- /Submit Order form -->
+    <!-- Shopping Cart. -->
+    <script type="text/template" class="shopping-cart-template">
+    <div class="modal-header"> 
+      <h3 class="modal-title">Shopping Cart</h3>
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    </div>
+    <div class="modal-body"> 
+    <div class="table-responsive">
+      <table class="table table-striped table-bordered">
+        <thead>
+          <tr>
+            <th>Thumbnails</th>
+            <th>Description</th>
+            <th class="right-align">Price</th>
+            <th class="text-center">Qty.</th>
+            <th class="right-align">Total</th>
+            <th class="text-center"><i class="fa fa-trash"></i> Remove</th>
+          </tr>
+        </thead>
+        <tbody id="shoppingCartData">
+            <% if( _oData.cartProductsCollection.length > 0 ) {
+            _.each( _oData.cartProductsCollection, function(listItem, nCartRowIndex ) { 
+              var listItemProduct = _oData.allProductsCollection[listItem.index]; 
+              var totalAddonPrice = 0,
+                  itemTotal = listItemProduct.price;
+              %>
+              <tr class="cart-row-<%- nCartRowIndex %>">
+                <td>
+                <div class="lw-cart-thumbnail">
+                    <a class="lw-hash-link-action" data-dismiss="modal" href="#/product/uid-<%- listItemProduct.index %>/<%- listItemProduct.slug %>">
+                        <img src="<%- listItemProduct.thumbPath %>" alt="<%- listItemProduct.name %>">
+                    </a>
+                </div>
+                </td>
+                <td>
+                    <div>
+                    <a class="lw-hash-link-action" data-dismiss="modal" href="#/product/uid-<%- listItemProduct.index %>/<%- listItemProduct.slug %>"><%- listItemProduct.name %></a>
+                </div>
+                <% 
+                if( !_.isEmpty(listItem.options) ) {    
+                    _.each( listItem.options, function(listItemOption, listItemOptionKey) {
+
+                    var listOptionValueDetails = _.findWhere(listItemProduct.productOptions[listItemOptionKey].optionValues,{value:listItemOption.value});
+                %>
+                <small>
+                    <strong><%- listItemOption.optionTitle %>:</strong> <%- listItemOption.name %>
+                    <% if(listOptionValueDetails.addonPrice) { 
+                        totalAddonPrice = totalAddonPrice + listOptionValueDetails.addonPrice;
+                        itemTotal += totalAddonPrice;
+                    %>
+                    (+ <%- listOptionValueDetails.addonPriceFormatted %>)
+                    <% } %>
+                </small>
+                 <% }); }
+                  %>
+                </td>
+                <td class="right-align"><div><%- _oData.fnMisc.formatAmount(listItemProduct.price + totalAddonPrice) %></div>
+                    <% if(listItemProduct.additionalShippingCharge) { 
+                        var itemShippingCharges = listItemProduct.calculateShipping();
+                            itemTotal += itemShippingCharges;
+                    %>
+                        <div><small>+ Shipping <%- _oData.fnMisc.formatAmount(itemShippingCharges) %></small></div>
+                     <% } %>
+                    <% if(listItemProduct.taxPercentage || _oData.configOptions.taxPercentage) { 
+                        var itemTax = listItemProduct.calculateTax(totalAddonPrice);
+                            itemTotal += itemTax;
+                    %>
+                        <div><small>+ Tax <%- _oData.fnMisc.formatAmount(itemTax) %></small></div>
+                     <% } %>
+                </td>
+                <td class="text-center lw-cart-qty-input"><input data-cartrowindex="<%- nCartRowIndex %>" type="number" step="1" min="1" value="<%- listItem.qty %>" class="cart-product-qty center-align form-control form-control-sm"/></td>
+                <td class="right-align"><%- _oData.fnMisc.formatAmount(itemTotal *  listItem.qty) %></td>
+                <td class="text-center"><button type="button" data-cartrowindex="<%- nCartRowIndex %>" href="#" class="btn btn-link btn btn-sm delete-product-from-cart" title="Remove from Cart"><i class="fa fa-trash"></i></button></td>
+              </tr>
+            <% }); } else { %>
+                <td colspan="6"><div class="alert alert-info">Cart is Empty!!</div></td>
+            <% } %>
+        </tbody>
+      </table>
+      </div>
+    </div>
+    <div> 
+      <div id="shopping_cart_total" class="alert tar text-right col-lg-12">
+    <div><strong><%- _oData.cartStats.totalItems %></strong> item(s) of <%- _oData.fnMisc.formatAmount(_oData.cartStats.subTotal) %></div> 
+      <div>
+          <% 
+        var fullTotal = _oData.cartStats.subTotal;
+      if( fullTotal && _oData.cartStats.totalShippingCharges ) { 
+        fullTotal += _oData.cartStats.totalShippingCharges;
+      %>
+      + Total Shipping: <%- _oData.fnMisc.formatAmount( _oData.cartStats.totalShippingCharges ) %> 
+      <% } %>
+      <% if( _oData.cartStats.totalTaxes ) { 
+        fullTotal += _oData.cartStats.totalTaxes;
+      %>
+      </div>
+      <div>
+        + Taxes: <%- _oData.fnMisc.formatAmount( _oData.cartStats.totalTaxes ) %>
+      </div>      
+      <% } %>
+      <br>
+      <h3 class="text-success"> <small>Total Amount Payable</small> <%- _oData.fnMisc.fullFormatAmount(fullTotal) %> </h3>
+      </div>
+        </div>
+      <div class="modal-footer">
+      <a href="#" class="btn btn-light float-left" data-dismiss="modal"><i class="fa fa-arrow-left"></i> Continue shopping</a>
+      <div lass="float-right">
+          <% if(_oData.configOptions.usePaypal) { %>
+      <a href="#" id="checkoutWithPaypalBtn" class="btn btn-outline-primary <% if( ! _oData.generalVars.enableOrderBtn) { %> disabled <% } %>" title="Checkout using PayPal"><img src="static-assets/lw-jquery-xml-cart/img/logo_paypal_106x28.png" alt="Checkout using PayPal" /> Checkout</a>
+      <% } %>
+      <% if(_oData.configOptions.useSubmitOrderByEmail) { %> 
+      <a id="checkoutSubmitOrderBtn" class="btn btn-primary <% if( ! _oData.generalVars.enableOrderBtn) { %> disabled <% } %>"  title="Submit order by Email" href="#/shopping-cart/uid-submit-order">Submit Order <i class="fa fa-envelope"></i></a>
+      <% } %>
+      </div>
+     </div>
+</script>
+    <!-- /Shopping Cart. -->
+    <!-- Shopping Cart button. -->
+    <script type="text/template" class="shopping-cart-btn-template">
+<p class="float-right">
+  <a title="View Cart" class="btn btn-light show-shopping-cart-btn" href="#/shopping-cart/uid-show">
+  <i class="fa fa-shopping-cart"></i> <strong><%- _oData.cartStats.totalItems %></strong> item(s) of <%- _oData.cartStats.amountFormatted %> in Cart</a> 
+</p>
+</script>
+    <!-- /Shopping Cart button. -->
+    <!-- Add to cart button. -->
+    <script type="text/template" class="add-to-cart-btn-template">
+<% if( ! _oData.nProductInCart ) { %>
+    <a href="#" class="btn btn-primary add-to-cart-btn"><span class="add-to-cart-btn-text">Add to Cart</span> <i class="fa fa-shopping-cart"></i></a>
+<% } else { %>
+    <a href="#" class="btn btn-primary add-to-cart-btn"><span class="add-to-cart-btn-text">Update Cart</span> <i class="fa fa-shopping-cart"></i> </a>
+<% }%>
+</script>
+    <!-- Sidebar Categories.↳ &#8627;-->
+    <script type="text/template" class="sidebar-categories-template">
+<% _.each(_oData.categoriesCollection,function( listItem ) { %>
+    <a style="padding-left: <%- listItem.parentLevel * 10 %>px;" data-categoryindex="<%- listItem.index %>" href="#/category/uid-<%- listItem.index %>/<%- listItem.slug %>" class="category-link-<%- listItem.index %> category-link list-group-item-action list-group-item category-list-item-<%- listItem.index %>"> <% if(listItem.parentLevel != 1) { %> &#8627; <% }%> <%- listItem.name %> </a>
+<% }) %>
+</script>
+    <!-- /Add to cart button. -->
+    <!-- Products Grid -->
+    <script type="text/template" class="products-grid-template">
+<% if( _oData.currentProductCollection.length < 1) { %>
+<div class="alert alert-warning">
+  No Products to Display
+</div>
+<% } else { %>
+<div class="lw-gutter-sizer"></div>
+<% _.each( _oData.currentProductCollection, function( listItem ){ %>
+    <div data-productindex="<%- listItem.index %>" class="product-item">
+  <div class="thumbnail">
+  <a data-productindex="<%- listItem.index %>" href="#/product/uid-<%- listItem.index %>/<%- listItem.slug %>" class="product-id-<%- listItem.index %> product-link">
+      <h4 class="product-name"> <%- listItem.name %></h4>
+  </a>
+  <a data-productindex="<%- listItem.index %>" href="#/product/uid-<%- listItem.index %>/<%- listItem.slug %>" class="product-id-<%- listItem.index %> product-link">
+    <div class="thumb-holder"><img class="product-item-thumb-image" data-src="<%- listItem.thumbPath %>" alt="<%- listItem.name %>"></div>
+    </a>
+    <h4 class="product-price"><%- listItem.formattedPrice %>
+        <% if(listItem.hasAddonPrice){ %>
+      <sup class="lw-has-addon-price" title="Product Options selection may affect a price">+</sup>
+      <% } %>
+       <% if(listItem.oldPrice){ %>
+      <small class="old-product-price"> <%- listItem.oldPrice.formatted %></small>
+      <% } %>
+    </h4>
+     <a tabindex="0" data-placement="top" data-toggle="popover" title="Add to Cart - <%- listItem.name %>" data-productindex="<%- listItem.index %>" class="btn btn-primary btn-sm add-to-cart-btn-grid-item grid-product-id-<%- listItem.index %>"><i class="fa fa-shopping-cart"></i> <span class="add-to-cart-btn-text-grid-item">Add to Cart</span> </a>
+  </div>
+</div>
+<% }); }; %>
+</script>
+    <!-- /Products Grid -->
+    <!-- Popover details -->
+    <script type="text/template" class="product-options-popover-template">
+<div class="lw-popover-content">
+    <div>vinod</div>
+    <input type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3">
+    <% var productOptions = _oData.oCurrentProductData.productOptions;
+        if(_oData.fnMisc.objectLength(productOptions) > 0) {
+        for(var productOptionKey in productOptions) {
+            var productOption = productOptions[productOptionKey];
+        %>
+        <div class="input-group input-group-sm">
+          <div class="input-group-prepend">
+            <span class="input-group-text"><%- productOption.title %></span>
+          </div>
+           <select data-title="<%- productOption.title %>" data-id="<%- productOption._id %>" class="form-control custom-select product-option-<%- productOption._id %> option-selector">
+        <%
+        if(productOption.optionValues.length > 0) {
+        _.each(productOption.optionValues,function(optionValue){ %>
+        <option data-belongs-to="<%- productOption._id %>" value="<%- optionValue.value %>">
+            <%- optionValue.name %>
+            <% if(optionValue.addonPrice) { %>
+            (+ <%- optionValue.addonPriceFormatted %>)
+            <% }%>
+        </option>
+        <% }) %>
+        <% }%>
+        </select>
+        </div>
+        <% } %>
+        <% }%>
+        <div class="input-group mb-3 input-group-sm">
+          <div class="input-group-prepend">
+            <span class="input-group-text">Qty</span>
+          </div>
+          <input type="number" step="1" min="1" value="1" class="item-product-qty center-align form-control"/>
+        </div>
+        <div class="input-group float-right input-group-sm">
+            <button data-productindex="<%- _oData.oCurrentProductData.index %>" type="button" class="btn btn-sm btn-success add-to-cart-btn-grid-item-save"><i class="lw-spin-animation fa fa-refresh"></i></button>
+        </div>
+</div>
+</script>
+    <!-- /Popover details -->
+    <!-- Product Details Modal -->
+    <script type="text/template" class="products-details-modal-template">
+  <div class="modal-header">
+    <h4 class="modal-title"><%- _oData.oCurrentProductData.name %></h4>
+       <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+  </div>
+  <div class="product-attributes p-2 border-bottom">
+    <% var categoryItem = _oData.categoriesCollection[_oData.oCurrentProductData.categoryIndex]; %>
+    <strong>Category: </strong><a data-categoryindex="<%- categoryItem.index %>" href="#/category/uid-<%- categoryItem.index %>/<%- categoryItem.slug %>" class="category-link-<%- categoryItem.index %> category-link"><%- categoryItem.name %></a> |  
+    <strong>Product ID: </strong><%- _oData.oCurrentProductData.id %> |  
+    <strong>Price: </strong>
+    <strong class="product-price"><%- _oData.oCurrentProductData.formattedPrice %></strong>
+    <% if(_oData.oCurrentProductData.hasAddonPrice){ %>
+      <sup class="lw-has-addon-price" title="Product Options selection may affect a price">+</sup>
+      <% } %>
+          <% if(_oData.oCurrentProductData.oldPrice){ %>
+      <small class="old-product-price"> <%- _oData.oCurrentProductData.oldPrice.formatted %></small>
+      <% } %>
+    </div>
+  <div class="modal-body lw-modal-body">
+    <%= _oData.oCurrentProductData.details %>
+  </div>
+  <div class="modal-footer">
+  <div class="form-inline">
+<% var productOptions = _oData.oCurrentProductData.productOptions;
+if(_oData.fnMisc.objectLength(productOptions) > 0) { 
+for(var productOptionKey in productOptions) {
+    var productOption = productOptions[productOptionKey];
+%>
+<div class="input-group mr-2">
+  <div class="input-group-prepend">
+    <span class="input-group-text"><%- productOption.title %></span>
+  </div>
+   <select data-title="<%- productOption.title %>" data-id="<%- productOption._id %>" class="form-control custom-select product-option-<%- productOption._id %> option-selector">
+<% 
+if(productOption.optionValues.length > 0) {
+_.each(productOption.optionValues,function(optionValue){ %>
+<option data-belongs-to="<%- productOption._id %>" value="<%- optionValue.value %>">
+    <%- optionValue.name %>
+    <% if(optionValue.addonPrice) { %>
+    (+ <%- optionValue.addonPriceFormatted %>)
+    <% }%>
+</option>
+<% }) %> 
+<% }%>
+</select>
+</div>
+<% } %> 
+<% }%>
+<div class="input-group mr-2">
+    <div class="input-group-prepend">
+    <span class="input-group-text">Qty</span>
+  </div>
+    <input type="number" step="1" min="1" value="1" class="item-product-qty center-align form-control"/>
+    <div class="input-group-append" id="addToCartBtnContainer">
+      </div>
+</div>
+      <button class="btn btn btn-light" data-dismiss="modal" aria-hidden="true">Close</button>
+  </div>
+  </div>
+</script>
+    <!-- /Product Details Modal -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <!--  javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/javascript" src="static-assets/packages/other-js-libs/jquery-3.7.0.min.js"></script>
+    <script type="text/javascript" src="static-assets/packages/other-js-libs/underscore-min.js"></script>
+    <script type="text/javascript" src="static-assets/packages/bootstrap-4/js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="static-assets/packages/other-js-libs/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="static-assets/packages/other-js-libs/jquery.json.min.js"></script>
+    <script type="text/javascript" src="static-assets/packages/other-js-libs/jstorage.min.js"></script>
+    <script type="text/javascript" src="static-assets/packages/other-js-libs/jquery.lazy.min.js"></script>
+    <script type="text/javascript" src="static-assets/packages/other-js-libs/masonry.pkgd.min.js"></script>
+    <!-- the main store script -->
+    <script type="text/javascript" src="static-assets/lw-jquery-xml-cart/js/lw-jquery-xml-cart.min.js?ver-3.5.0"></script>
+</body>
+
+</html>
